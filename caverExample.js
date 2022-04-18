@@ -94,9 +94,9 @@ async function sendTransactionKIP7() {
 
     // 토큰 배포 
     const kip7 = await caver.kct.kip7.deploy({
-        name: 'asdf',
-        symbol: 'ASDF',
-        decimals: 18,
+        name: 'kip7',
+        symbol: 'KIP',
+        decimals: 18, // KLAY 단위와 일치
         initialSupply: '100000000000000000000',
     }, address);
 
@@ -113,7 +113,7 @@ async function sendTransactionKIP7() {
 
 // 토큰 보유량 확인
 async function getBalanceOfToken(address) {
-    kip7 = new caver.kct.kip7('0xaeb170299bF069EcBc3189Ddd0c84a846d6B7062');
+    const kip7 = new caver.kct.kip7('0xaeb170299bF069EcBc3189Ddd0c84a846d6B7062');
     // console.log(`${JSON.stringify(await kip7.detectInterface())}`);
     // console.log(`Token name: ${await kip7.name()}`);
     // console.log(`Token symbol: ${await kip7.symbol()}`);
@@ -143,10 +143,11 @@ async function transferToken() {
     const keyring = caver.wallet.keyring.createWithRoleBasedKey(address, roledBasedKeyArray); // 역할기반 계정을 wallet에 추가 : 나중에 서명할 때 쓰임
     caver.wallet.add(keyring);
 
-    const tokenAddress = '0xaeb170299bF069EcBc3189Ddd0c84a846d6B7062'; // 토큰 주소 
+    // const tokenAddress = '0xaeb170299bF069EcBc3189Ddd0c84a846d6B7062'; // 토큰 주소 
+    const tokenAddress = '0x6fdc9c2554cC504bB379bFb48E78eCe84F95DE2e'; // 토큰 주소 
     const recipient = '0xd758bb2ff06852fda6165191f10791673590e85b'; // 수신자 || 토큰 받는 사람
 
-    kip7 = new caver.kct.kip7(tokenAddress);
+    const kip7 = new caver.kct.kip7(tokenAddress);
     // console.log(`${JSON.stringify(await kip7.detectInterface())}`);
     // console.log(`Token name: ${await kip7.name()}`);
     // console.log(`Token symbol: ${await kip7.symbol()}`);
@@ -155,11 +156,15 @@ async function transferToken() {
 
     // from 추가
     kip7.options.from = address;
-    receipt = await kip7.transfer(recipient, 10);
-        
+    const receipt = await kip7.transfer(recipient, caver.utils.convertToPeb('10', 'KLAY'));
+
+    const senderBalance = await getBalanceOfToken('0x53166a69dcb3934794d459a88bec5d89876d1c34');
+    const receiverBalance = await getBalanceOfToken('0xd758bb2ff06852fda6165191f10791673590e85b');
+    const tokenSymbol = await kip7.symbol();
+
     console.log(`영수증 :`, receipt);
-    console.log(`보낸 사람의 토큰 보유량 ${await getBalanceOfToken('0x53166a69dcb3934794d459a88bec5d89876d1c34')}`);
-    console.log(`받는 사람의 토큰 보유량 ${await getBalanceOfToken('0xd758bb2ff06852fda6165191f10791673590e85b')}`);
+    console.log(`보낸 사람의 토큰 보유량 ${caver.utils.convertFromPeb(senderBalance, 'KLAY')} ${tokenSymbol}`);
+    console.log(`받는 사람의 토큰 보유량 ${caver.utils.convertFromPeb(receiverBalance, 'KLAY')} ${tokenSymbol}`);
 }
 
 
@@ -219,6 +224,12 @@ Token name: hexlant
 Token symbol: HEX
 Token decimals: 10
 Token totalSupply: 100000000000000000000
+
+Deployed KIP-7 token contract address: 0x6fdc9c2554cC504bB379bFb48E78eCe84F95DE2e
+Token name: kip7
+Token symbol: KIP
+Token decimals: 18
+Token totalSupply: 100000000000000000000
 */
 
 
@@ -231,6 +242,7 @@ Token totalSupply: 100000000000000000000
 
 // 토큰 전송
 transferToken();
+// caver.
 /*
 {
   blockHash: '0x0ee98ff612c517d89c7eb208233415aad21557fefc97997c68ccb5ffd3beb887',
